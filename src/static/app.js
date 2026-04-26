@@ -591,6 +591,15 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="share-section">
+        <span class="share-label">Share:</span>
+        <div class="share-buttons">
+          <button class="share-button share-twitter" data-activity="${name}" title="Share on X (Twitter)">𝕏</button>
+          <button class="share-button share-facebook" data-activity="${name}" title="Share on Facebook">f</button>
+          <button class="share-button share-whatsapp" data-activity="${name}" title="Share on WhatsApp">💬</button>
+          <button class="share-button share-copy" data-activity="${name}" title="Copy link">🔗</button>
+        </div>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -609,7 +618,54 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Add click handlers for share buttons
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        handleShare(button, name, details);
+      });
+    });
+
     activitiesList.appendChild(activityCard);
+  }
+
+  // Handle social sharing
+  function handleShare(button, name, details) {
+    const formattedSchedule = formatSchedule(details);
+    const text = `Check out "${name}" at Mergington High School! ${details.description} Schedule: ${formattedSchedule}`;
+    const url = window.location.href;
+
+    if (button.classList.contains("share-twitter")) {
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    } else if (button.classList.contains("share-facebook")) {
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    } else if (button.classList.contains("share-whatsapp")) {
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(text + " " + url)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    } else if (button.classList.contains("share-copy")) {
+      navigator.clipboard.writeText(text + " " + url).then(() => {
+        const originalText = button.textContent;
+        button.textContent = "✓";
+        button.title = "Copied!";
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.title = "Copy link";
+        }, 2000);
+      }).catch(() => {
+        showMessage("Could not copy to clipboard.", "error");
+      });
+    }
   }
 
   // Event listeners for search and filter
