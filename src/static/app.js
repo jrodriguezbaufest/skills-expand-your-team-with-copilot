@@ -569,6 +569,31 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="share-section">
+        <span class="share-label">Share:</span>
+        <div class="share-buttons">
+          <button class="share-btn share-twitter tooltip" title="Share on X (Twitter)" aria-label="Share on X (Twitter)">
+            𝕏
+            <span class="tooltip-text">Share on X (Twitter)</span>
+          </button>
+          <button class="share-btn share-facebook tooltip" title="Share on Facebook" aria-label="Share on Facebook">
+            f
+            <span class="tooltip-text">Share on Facebook</span>
+          </button>
+          <button class="share-btn share-whatsapp tooltip" title="Share on WhatsApp" aria-label="Share on WhatsApp">
+            💬
+            <span class="tooltip-text">Share on WhatsApp</span>
+          </button>
+          <button class="share-btn share-email tooltip" title="Share via Email" aria-label="Share via Email">
+            ✉
+            <span class="tooltip-text">Share via Email</span>
+          </button>
+          <button class="share-btn share-copy tooltip" title="Copy link" aria-label="Copy link">
+            🔗
+            <span class="tooltip-text">Copy link</span>
+          </button>
+        </div>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -586,6 +611,61 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add click handlers for share buttons
+    const pageUrl = window.location.origin + window.location.pathname;
+    const shortDescription = details.description.length > 100
+      ? details.description.slice(0, 97) + "..."
+      : details.description;
+    const shareText = `Check out "${name}" at Mergington High School! ${shortDescription}`;
+    const encodedUrl = encodeURIComponent(pageUrl);
+    const encodedText = encodeURIComponent(shareText);
+
+    activityCard.querySelector(".share-twitter").addEventListener("click", () => {
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    });
+
+    activityCard.querySelector(".share-facebook").addEventListener("click", () => {
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    });
+
+    activityCard.querySelector(".share-whatsapp").addEventListener("click", () => {
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(shareText + " " + pageUrl)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    });
+
+    activityCard.querySelector(".share-email").addEventListener("click", () => {
+      const subject = encodeURIComponent(`Join "${name}" at Mergington High School!`);
+      const body = encodeURIComponent(`${shareText}\nSchedule: ${formattedSchedule}\n\n${pageUrl}`);
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    });
+
+    activityCard.querySelector(".share-copy").addEventListener("click", (event) => {
+      const copyBtn = event.currentTarget;
+      const tooltipText = copyBtn.querySelector(".tooltip-text");
+      navigator.clipboard.writeText(pageUrl).then(() => {
+        tooltipText.textContent = "Copied!";
+        setTimeout(() => {
+          tooltipText.textContent = "Copy link";
+        }, 2000);
+      }).catch(() => {
+        tooltipText.textContent = "Copy failed";
+        setTimeout(() => {
+          tooltipText.textContent = "Copy link";
+        }, 2000);
+      });
+    });
 
     activitiesList.appendChild(activityCard);
   }
