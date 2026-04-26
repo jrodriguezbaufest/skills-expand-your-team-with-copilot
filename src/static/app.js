@@ -594,10 +594,10 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="share-section">
         <span class="share-label">Share:</span>
         <div class="share-buttons">
-          <button class="share-button share-twitter" data-activity="${name}" title="Share on X (Twitter)">𝕏</button>
-          <button class="share-button share-facebook" data-activity="${name}" title="Share on Facebook">f</button>
-          <button class="share-button share-whatsapp" data-activity="${name}" title="Share on WhatsApp">💬</button>
-          <button class="share-button share-copy" data-activity="${name}" title="Copy link">🔗</button>
+          <button class="share-button share-twitter" data-activity="${name}" title="Share on X (Twitter)" aria-label="Share on X (Twitter)">𝕏</button>
+          <button class="share-button share-facebook" data-activity="${name}" title="Share on Facebook" aria-label="Share on Facebook">f</button>
+          <button class="share-button share-whatsapp" data-activity="${name}" title="Share on WhatsApp" aria-label="Share on WhatsApp">💬</button>
+          <button class="share-button share-copy" data-activity="${name}" title="Copy link" aria-label="Copy link to clipboard">🔗</button>
         </div>
       </div>
     `;
@@ -632,7 +632,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle social sharing
   function handleShare(button, name, details) {
     const formattedSchedule = formatSchedule(details);
-    const text = `Check out "${name}" at Mergington High School! ${details.description} Schedule: ${formattedSchedule}`;
+    const text = `Join us for "${name}" at Mergington High School! ${details.description} We meet: ${formattedSchedule}`;
     const url = window.location.href;
 
     if (button.classList.contains("share-twitter")) {
@@ -654,18 +654,50 @@ document.addEventListener("DOMContentLoaded", () => {
         "noopener,noreferrer"
       );
     } else if (button.classList.contains("share-copy")) {
-      navigator.clipboard.writeText(text + " " + url).then(() => {
-        const originalText = button.textContent;
-        button.textContent = "✓";
-        button.title = "Copied!";
-        setTimeout(() => {
-          button.textContent = originalText;
-          button.title = "Copy link";
-        }, 2000);
-      }).catch(() => {
-        showMessage("Could not copy to clipboard.", "error");
-      });
+      const fullText = text + " " + url;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(fullText).then(() => {
+          showCopiedFeedback(button);
+        }).catch(() => {
+          fallbackCopyText(button, fullText);
+        });
+      } else {
+        fallbackCopyText(button, fullText);
+      }
     }
+  }
+
+  // Fallback copy for non-secure contexts
+  function fallbackCopyText(button, text) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      document.execCommand("copy");
+      showCopiedFeedback(button);
+    } catch {
+      showMessage("Could not copy to clipboard.", "error");
+    }
+    document.body.removeChild(textarea);
+  }
+
+  // Show temporary feedback on the copy button
+  function showCopiedFeedback(button) {
+    const originalText = button.textContent;
+    const originalTitle = button.title;
+    const originalAriaLabel = button.getAttribute("aria-label");
+    button.textContent = "✓";
+    button.title = "Copied!";
+    button.setAttribute("aria-label", "Copied to clipboard");
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.title = originalTitle;
+      button.setAttribute("aria-label", originalAriaLabel);
+    }, 2000);
   }
 
   // Event listeners for search and filter
