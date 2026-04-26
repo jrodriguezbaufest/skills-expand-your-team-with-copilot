@@ -613,8 +613,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Add click handlers for share buttons
-    const pageUrl = window.location.href;
-    const shareText = `Check out "${name}" at Mergington High School! ${details.description} Schedule: ${formattedSchedule}`;
+    const pageUrl = window.location.origin + window.location.pathname;
+    const shortDescription = details.description.length > 100
+      ? details.description.slice(0, 97) + "..."
+      : details.description;
+    const shareText = `Check out "${name}" at Mergington High School! ${shortDescription}`;
     const encodedUrl = encodeURIComponent(pageUrl);
     const encodedText = encodeURIComponent(shareText);
 
@@ -644,7 +647,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     activityCard.querySelector(".share-email").addEventListener("click", () => {
       const subject = encodeURIComponent(`Join "${name}" at Mergington High School!`);
-      const body = encodeURIComponent(`${shareText}\n\n${pageUrl}`);
+      const body = encodeURIComponent(`${shareText}\nSchedule: ${formattedSchedule}\n\n${pageUrl}`);
       window.location.href = `mailto:?subject=${subject}&body=${body}`;
     });
 
@@ -653,6 +656,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const tooltipText = copyBtn.querySelector(".tooltip-text");
       navigator.clipboard.writeText(pageUrl).then(() => {
         tooltipText.textContent = "Copied!";
+        setTimeout(() => {
+          tooltipText.textContent = "Copy link";
+        }, 2000);
+      }).catch(() => {
+        tooltipText.textContent = "Copy failed";
         setTimeout(() => {
           tooltipText.textContent = "Copy link";
         }, 2000);
